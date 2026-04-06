@@ -10,7 +10,7 @@ A plugin for **SCP: Secret Laboratory** servers running the [EXILED](https://git
 
 ## License
 
-To quote Freddy Mercury:
+To quote Freddie Mercury:
 
 > *"Do whatever you want with my music, just don't make it boring."*
 
