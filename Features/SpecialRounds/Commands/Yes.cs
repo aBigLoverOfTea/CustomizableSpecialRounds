@@ -1,5 +1,6 @@
 ﻿using System;
 using CommandSystem;
+using CustomizableSpecialRounds.Features.SpecialRounds.Core.Enums;
 using Exiled.API.Features;
 
 namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
@@ -8,7 +9,7 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
     {
         public string Command { get; } = "yes";
 
-        public string[] Aliases { get; } = new[] { "y", "1", "+" };
+        public string[] Aliases { get; } = { "y", "1", "+" };
 
         public string Description { get; } = "Vote \"Yes\" for the current selected special round (works only during the voting!)";
         
@@ -20,13 +21,19 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
                 return false;
             }
 
-            if (Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound != SpecialRoundType.None)
+            if (Plugin.Instance.SpecialRoundsManager.VotingManager == null)
+            {
+                response = "Error: voting is disabled.";
+                return false;
+            }
+            
+            if (!Plugin.Instance.SpecialRoundsManager.VotingManager.IsVotingInProgress)
             {
                 response = "You can't vote now!";
                 return false;
             }
             
-            Plugin.Instance.SpecialRoundsManager.Vote(player.Id, VoteOptions.Yes);
+            Plugin.Instance.SpecialRoundsManager.VotingManager.Vote(player.Id, VoteOption.Yes);
 
             response = "Your vote has been accepted.";
             return true;

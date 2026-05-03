@@ -1,7 +1,7 @@
 using System;
 using CustomizableSpecialRounds.Features.SpecialRounds;
+using CustomizableSpecialRounds.Features.SpecialRounds.Core.Managers;
 using Exiled.API.Features;
-using SpecialRounds;
 
 namespace CustomizableSpecialRounds
 {
@@ -11,16 +11,14 @@ namespace CustomizableSpecialRounds
         
         public override string Author { get; } = "zaza";
 
-        public override Version Version { get; } =  new Version(0, 9, 1);
+        public override Version Version { get; } =  new Version(1, 0, 0);
         
         public static Plugin Instance { get; private set; }
         
-        public SpecialRoundsManager SpecialRoundsManager { get; set; }
+        public SpecialRoundsManager SpecialRoundsManager { get; private set; }
 
         public override void OnEnabled()
         {
-            Log.Info($"Enabling Customizable Special Rounds v.{Version}...");
-
             Instance = this;
 
             SpecialRoundsManager = new SpecialRoundsManager();
@@ -32,8 +30,6 @@ namespace CustomizableSpecialRounds
 
         public override void OnDisabled()
         {
-            Log.Info("Customizable Special Rounds disabled!");
-            
             SpecialRoundsManager = null;
             
             Handlers.UnsubscribeEvents();

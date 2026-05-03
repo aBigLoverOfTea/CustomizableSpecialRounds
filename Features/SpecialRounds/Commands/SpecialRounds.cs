@@ -1,7 +1,7 @@
 ﻿using System;
 using CommandSystem;
+using CustomizableSpecialRounds.Features.SpecialRounds.Commands.Interfaces;
 using Exiled.API.Features;
-using SpecialRounds.Features.SpecialRounds.Commands;
 
 namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
 {
@@ -14,7 +14,7 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
         
         public override string Command { get; } = "specialrounds";
         
-        public override string[] Aliases { get; } = new[] { "spr", "csr", "specialr", "csrounds", "srounds" };
+        public override string[] Aliases { get; } = { "spr", "csr", "specialr", "csrounds", "srounds" };
 
         public override string Description { get; } = "Customizes Special Rounds' commands.";
         
@@ -23,27 +23,41 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
             RegisterCommand(new Yes());
             RegisterCommand(new No());
             RegisterCommand(new Info());
+            RegisterCommand(new Pause());
+            RegisterCommand(new SetParameter());
+            RegisterCommand(new Reroll());
         }
 
         protected override bool ExecuteParent(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             if (!Player.TryGet(sender, out var playerSender))
             {
-                response = "Error: no player found.";
+                response = "Error: no sender found.";
                 return false;
             }
-            
-            response = "Customizable Special Rounds subcommands:\n" +
-                       "yes: vote \"yes\" for the current selected special round (works only during the voting!)\n" +
-                       "no: vote \"no\" for the current selected special round (works only during the voting!)\n";
+
+            var standardCommands = "";
+            var remoteAdminCommands = "";
+
+            foreach (var command in Commands)
+            {
+                if (command.Value is IRemoteAdminCommand)
+                {
+                    remoteAdminCommands += $"* {command.Value.Command}: {command.Value.Description}\n";
+                    continue;
+                }
+                
+                standardCommands += $"* {command.Value.Command}: {command.Value.Description}\n";
+            }
+
+            response = "---Customizable Special Rounds subcommands---\n" + standardCommands;
 
             if (!playerSender.RemoteAdminAccess)
             {
                 return true;
             }
 
-            response += "\nRA subcommands:\n" +
-                        "info: get current plugin info (current special round, configurable modificators, etc.)\n";
+            response += "\n---RA subcommands---\n" + remoteAdminCommands;
             
             return true;
         }

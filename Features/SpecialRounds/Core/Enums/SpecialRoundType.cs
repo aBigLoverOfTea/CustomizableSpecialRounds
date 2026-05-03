@@ -1,4 +1,4 @@
-﻿namespace CustomizableSpecialRounds.Features.SpecialRounds
+﻿namespace CustomizableSpecialRounds.Features.SpecialRounds.Core.Enums
 {
     public enum SpecialRoundType
     {
@@ -12,5 +12,6 @@
         ZergRush,
         DrugTesting,
         OneManArmy,
+        Phantoms,
     }
 }

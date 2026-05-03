@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using CustomizableSpecialRounds.Features.SpecialRounds.Core;
+using CustomizableSpecialRounds.Features.SpecialRounds.Core.Enums;
+using CustomizableSpecialRounds.Features.SpecialRounds.Core.Managers;
 using CustomPlayerEffects;
 using Exiled.API.Enums;
 using Exiled.API.Extensions;
@@ -6,10 +8,12 @@ using Exiled.API.Features;
 using Exiled.API.Features.Items;
 using Exiled.Events.EventArgs.Player;
 using Exiled.Events.EventArgs.Server;
+using InventorySystem;
+using InventorySystem.Items;
 using InventorySystem.Items.Usables.Scp330;
 using MEC;
 using PlayerRoles;
-using Round = Exiled.API.Features.Round;
+using Server = LabApi.Features.Wrappers.Server;
 
 namespace CustomizableSpecialRounds.Features.SpecialRounds
 {
@@ -24,6 +28,8 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds
             Exiled.Events.Handlers.Server.RestartingRound += SpecialRoundsOnRestartingRound;
             Exiled.Events.Handlers.Server.RespawningTeam += SpecialRoundsOnRespawning;
             Exiled.Events.Handlers.Player.PickingUpItem += SpecialRoundOnPickingUpItem;
+            Exiled.Events.Handlers.Player.Interacted += SpecialRoundsOnInteracted;
+            Exiled.Events.Handlers.Player.Shooting += SpecialRoundsOnShooting;
         }
 
         public static void UnsubscribeEvents()
@@ -35,49 +41,33 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds
             Exiled.Events.Handlers.Server.RestartingRound -= SpecialRoundsOnRestartingRound;
             Exiled.Events.Handlers.Server.RespawningTeam -= SpecialRoundsOnRespawning;
             Exiled.Events.Handlers.Player.PickingUpItem -= SpecialRoundOnPickingUpItem;
+            Exiled.Events.Handlers.Player.Interacted -= SpecialRoundsOnInteracted;
+            Exiled.Events.Handlers.Player.Shooting -= SpecialRoundsOnShooting;
         }
         
         private static void SpecialRoundsOnAllPlayerSpawned()
         {
-            Log.Info($"Starting the round with the special round: {Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound}");
-            
-            Map.ClearBroadcasts();
+            Log.Info($"Starting the round with the Special Round: {Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Name}");
 
-            switch (Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound)
+            switch (Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Type)
             {
-                case SpecialRoundType.Payday:
+                case SpecialRoundType.SweetTooth: // This case block doesn't use SpecialRoundsManager.GiveItemToAllPlayers since it requires special logic
                     foreach (var player in Player.List)
                     {
-                        if (!DefaultPlayerChecks(player) || player.IsScp)
+                        if (!SpecialRoundsManager.RunDefaultPlayerChecks(player) || player.IsScp)
                         {
-                            break;
+                            continue;
                         }
 
-                        try
-                        {
-                            player.AddItem(ItemType.Coin, Plugin.Instance.Config.PaydayCoinsAtStart);
-                        }
-                        catch
-                        {
-                            player.Broadcast(5, "Seems like you don't have enough place for your paycheck...");
-                            break;
-                        }
-                        player.Broadcast(5, "You suddenly feel a little bit richer...");
-                    }
-                    break;
-                case SpecialRoundType.SweetTooth:
-                    foreach (var player in Player.List)
-                    {
-                        if (!DefaultPlayerChecks(player) || player.IsScp)
-                        {
-                            break;
-                        }
-
-                        Scp330 candyBag = (Scp330)Item.Create(ItemType.SCP330);
+                        var candyBag = (Scp330)Item.Create(ItemType.SCP330);
                         
                         candyBag.RemoveAllCandy();
 
-                        for (var i = 0; i < Plugin.Instance.Config.SweetToothPinkCandiesAtStart; i++)
+                        var candies =
+                            Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<int>(
+                                SpecialRoundKeys.SweetTooth.PinkCandiesAtStart);
+
+                        for (var i = 0; i < candies; i++)
                         {
                             candyBag.AddCandy(CandyKindID.Pink);
                         }
@@ -88,71 +78,58 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds
                         }
                         catch
                         {
-                            player.Broadcast(5, "Seems like you don't have enough place for sweets...");
-                            break;
+                            player.Broadcast(5, Plugin.Instance.Config.SweetToothItemNotGivenBroadcast, shouldClearPrevious:true);
+                            continue;
                         }
-                        player.Broadcast(5, "Let chaos reign!");
+                        player.Broadcast(5, Plugin.Instance.Config.SweetToothItemGivenBroadcast, shouldClearPrevious:true);
                     }
                     break;
+                
                 case SpecialRoundType.SuperBalling:
-                    foreach (var player in Player.List)
-                    {
-                        if (!DefaultPlayerChecks(player) || player.IsScp)
-                        {
-                            break;
-                        }
-
-                        try
-                        {
-                            player.AddItem(ItemType.SCP018, Plugin.Instance.Config.SuperBallingScp018AtStart);
-                        }
-                        catch
-                        {
-                            player.Broadcast(5, "Seems like you don't have enough place for the ball...");
-                            break;
-                        }
-                        player.Broadcast(5, "Time to play catch!");
-                    }
+                    SpecialRoundsManager.GiveItemToAllPlayers(ItemType.SCP018,
+                        Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<int>(SpecialRoundKeys.SuperBalling.Scp018AtStart),
+                        Plugin.Instance.Config.SuperBallingItemGivenBroadcast,
+                        Plugin.Instance.Config.SuperBallingItemNotGivenBroadcast);
                     break;
+                
                 case SpecialRoundType.Chill:
-                    foreach (var player in Player.List)
-                    {
-                        if (!DefaultPlayerChecks(player) || player.IsScp)
-                        {
-                            break;
-                        }
-
-                        try
-                        {
-                            player.AddItem(ItemType.SCP244a, Plugin.Instance.Config.ChillScp244AtStart);
-                        }
-                        catch
-                        {
-                            player.Broadcast(5, "Seems like you don't have enough place for the chill ghost...");
-                            break;
-                        }
-                        player.Broadcast(5, "Freeze \'em all!");
-                    }
+                    SpecialRoundsManager.GiveItemToAllPlayers(ItemType.SCP244a,
+                        Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<int>(SpecialRoundKeys.Chill.Scp244AtStart),
+                        Plugin.Instance.Config.ChillItemGivenBroadcast,
+                        Plugin.Instance.Config.ChillItemNotGivenBroadcast);
                     break;
+                
                 case SpecialRoundType.ZergRush:
+                    var zergRushRoleTypeId = (RoleTypeId)Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters
+                        .Get<int>(SpecialRoundKeys.ZergRush.RoleId);
+                    
                     foreach (var player in Player.List)
                     {
-                        if (!DefaultPlayerChecks(player) || player.IsScp)
+                        if (!SpecialRoundsManager.RunDefaultPlayerChecks(player) || player.IsScp)
                         {
-                            break;
+                            continue;
                         }
                         
-                        player.Role.Set((RoleTypeId)Plugin.Instance.Config.ZergRushRoleId, SpawnReason.RoundStart, RoleSpawnFlags.AssignInventory);
+                        player.Role.Set(zergRushRoleTypeId,
+                            SpawnReason.RoundStart,
+                            RoleSpawnFlags.All);
                         
-                        player.Broadcast(5, "ZERG RUSH!!!");
+                        player.Broadcast(5, BroadcastFormatter.GetFormatedZergRushBroadcast(), shouldClearPrevious:true);
                     }
                     break;
+                
                 case SpecialRoundType.OneManArmy:
-                    var chosenPlayer = Player.List.GetRandomValue(DefaultPlayerChecks);
-                    
-                    chosenPlayer.Role.Set((RoleTypeId)Plugin.Instance.Config.OneManArmyChosenOneRoleId, SpawnReason.RoundStart, RoleSpawnFlags.All);
+                    var chosenPlayer = Player.List.GetRandomValue(SpecialRoundsManager.RunDefaultPlayerChecks);
 
-                    chosenPlayer.MaxHealth = Plugin.Instance.Config.OneManArmyChosenOneHealth;
+                    var chosenOneRoleTypeId =
+                        (RoleTypeId)Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<int>(
+                            SpecialRoundKeys.OneManArmy.ChosenOneRoleId);
+                    
+                    chosenPlayer.Role.Set(chosenOneRoleTypeId,
+                        SpawnReason.RoundStart,
+                        RoleSpawnFlags.All);
+
+                    chosenPlayer.MaxHealth = Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<int>(SpecialRoundKeys.OneManArmy.ChosenOneHealth);
 
                     chosenPlayer.Health = chosenPlayer.MaxHealth;
                     
@@ -163,22 +140,28 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds
                         chosenPlayer.AddItem(pair.Key, pair.Value);
                     }
                     
-                    chosenPlayer.Broadcast(5, "<color=red><b>YOU'RE THE STAR OF THE SHOW NOW, BABY!</b></color>");
+                    chosenPlayer.Broadcast(5, Plugin.Instance.Config.OneManArmyChosenOneBroadcast, shouldClearPrevious:true);
+                    
+                    var scpRoleId =
+                        (RoleTypeId)Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<int>(
+                            SpecialRoundKeys.OneManArmy.ScpRoleId);
+                    
+                    var scpHealth = Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<int>(SpecialRoundKeys.OneManArmy.ScpHealth);
 
                     foreach (var player in Player.List)
                     {
-                        if (!DefaultPlayerChecks(player) || player.Id == chosenPlayer.Id)
+                        if (!SpecialRoundsManager.RunDefaultPlayerChecks(player) || player.Id == chosenPlayer.Id)
                         {
-                            break;
+                            continue;
                         }
                         
-                        player.Role.Set((RoleTypeId)Plugin.Instance.Config.OneManArmyScpRoleId, SpawnReason.RoundStart, RoleSpawnFlags.All);
-                        
-                        player.MaxHealth = Plugin.Instance.Config.OneManArmyScpHealth;
+                        player.Role.Set(scpRoleId, SpawnReason.RoundStart, RoleSpawnFlags.All);
+
+                        player.MaxHealth = scpHealth;
 
                         player.Health = player.MaxHealth;
                         
-                        player.Broadcast(5, "<color=red><b>BRING HIM DOWN!</b></color>");
+                        player.Broadcast(5, BroadcastFormatter.GetFormatedOneManArmyScpBroadcast(chosenPlayer.Nickname), shouldClearPrevious:true);
                     }
                     break;
             }
@@ -186,32 +169,107 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds
 
         private static void SpecialRoundsOnSpawned(SpawnedEventArgs ev)
         {
-            switch (Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound)
+            if (Plugin.Instance.SpecialRoundsManager.IsPaused)
             {
+                return;
+            }
+
+            if (!Plugin.Instance.Config.ShouldAffectForceSpawnedPlayers && ev.Reason == SpawnReason.ForceClass)
+            {
+                return;
+            }
+            
+            switch (Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Type)
+            {
+                case SpecialRoundType.Payday:
+                    SpecialRoundsManager.GiveItemToPlayer(ItemType.Coin,
+                        ev.Player,
+                        Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<int>(SpecialRoundKeys.Payday.CoinsAtStart),
+                        Plugin.Instance.Config.PaydayItemGivenBroadcast,
+                        Plugin.Instance.Config.PaydayItemNotGivenBroadcast);
+                    break;
+                
                 case SpecialRoundType.VitalityShift:
                     var multiplier = ev.Player.IsScp
-                        ? Plugin.Instance.Config.VitalityShiftScpHealthMultiplier
-                        : Plugin.Instance.Config.VitalityShiftHumanRoleHealthMultiplier;
+                        ? Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<int>(SpecialRoundKeys.VitalityShift.ScpHealthMultiplier)
+                        : Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<int>(SpecialRoundKeys.VitalityShift.HumanRoleHealthMultiplier);
+                    
                     ev.Player.MaxHealth *= multiplier;
                     ev.Player.Health *= multiplier;
+                    
+                    ev.Player.Broadcast(5, BroadcastFormatter.GetFormatedVitalityShiftBroadcast(multiplier.ToString()), shouldClearPrevious:true);
                     break;
+                
                 case SpecialRoundType.ForestGump:
                     ev.Player.EnableEffect<MovementBoost>();
-                    ev.Player.ChangeEffectIntensity<MovementBoost>(Plugin.Instance.Config.ForestGumoSpeedEffectIntensity);
-                    break;
-                case SpecialRoundType.DrugTesting:
-                    var effect = SpecialRoundsManager.GetRandomEffectType();
+
+                    var effectIntensity =
+                        Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<byte>(SpecialRoundKeys
+                            .ForestGump.SpeedEffectIntensity);
                     
-                    ev.Player.EnableEffect(effect.Key);
-                    ev.Player.ChangeEffectIntensity(effect.Key, effect.Value);
-                    ev.Player.Broadcast(3, $"You got: {effect.Key.ToString()}!");
+                    ev.Player.ChangeEffectIntensity<MovementBoost>(effectIntensity);
+                    ev.Player.Broadcast(5, BroadcastFormatter.GetFormatedForestGumpBroadcast(effectIntensity.ToString()));
+                    break;
+                
+                case SpecialRoundType.DrugTesting:
+                    var spawnProtectionDuration = (ushort)Server.SpawnProtectDuration;
+
+                    if ( ev.Player.IsSpawnProtected && Server.SpawnProtectDuration >= 1 )
+                    {
+                        ev.Player.Broadcast(spawnProtectionDuration, "Spawn protection detected! Please, wait.", shouldClearPrevious:true);
+
+                        Timing.CallDelayed(spawnProtectionDuration + 1, () =>
+                        {
+                            Plugin.Instance.SpecialRoundsManager.GiveRandomEffectToPlayer(ev.Player.Id); // Usage of a MEC for every player is suboptimal, needs to be optimized
+                        });
+
+                        break;
+                    }
+                    
+                    Plugin.Instance.SpecialRoundsManager.GiveRandomEffectToPlayer(ev.Player.Id);
+                    
+                    break;
+                
+                case SpecialRoundType.Phantoms:
+                    if (!SpecialRoundsManager.RunDefaultPlayerChecks(ev.Player))
+                    {
+                        break;
+                    }
+
+                    if (ev.Player.IsScp)
+                    {
+                        var healthBonus =
+                            Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<int>(
+                                SpecialRoundKeys.Phantoms.ScpHealthBonus);
+                        
+                        ev.Player.MaxHealth += healthBonus;
+                        ev.Player.Health += healthBonus;
+
+                        break;
+                    }
+                    
+                    Plugin.Instance.SpecialRoundsManager.InvisiblePlayers.Add(ev.Player.Id, null);
+                    
+                    ev.Player.EnableEffect<Invisible>();
+                    
+                    ev.Player.Broadcast(5, Plugin.Instance.Config.PhantomsBroadcast, shouldClearPrevious:true);
+                    
+                    break;
+                
+                case SpecialRoundType.None:
+                    Log.Warn("Warning: current Special Round type is None.");
                     break;
             }
         }
 
         private static void SpecialRoundsOnRespawning(RespawningTeamEventArgs ev)
         {
-            if (Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound != SpecialRoundType.OneManArmy)
+            if (Plugin.Instance.SpecialRoundsManager.IsPaused)
+            {
+                return;
+            }
+            
+            if (Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Type != SpecialRoundType.OneManArmy)
             {
                 return;
             }
@@ -221,24 +279,75 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds
 
         private static void SpecialRoundOnPickingUpItem(PickingUpItemEventArgs ev)
         {
-            if (Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound != SpecialRoundType.OneManArmy)
-            {
-                return;
-            }
-
-            if (ev.Pickup.Type != ItemType.SCP500)
-            {
-                return;
-            }
-
-            if (ev.Player.Role.Type != (RoleTypeId)Plugin.Instance.Config.OneManArmyChosenOneRoleId)
+            if (Plugin.Instance.SpecialRoundsManager.IsPaused)
             {
                 return;
             }
             
-            ev.Player.ShowHint("You don't need this.", 1f);
+            switch (Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Type)
+            {
+                case SpecialRoundType.OneManArmy:
 
-            ev.IsAllowed = false;
+                    var chosenOneRoleType = (RoleTypeId)
+                        Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<int>(SpecialRoundKeys
+                            .OneManArmy.ChosenOneRoleId);
+                    
+                    if (ev.Player.Role.Type != chosenOneRoleType)
+                    {
+                        return;
+                    }
+
+                    switch (ev.Pickup.Type)
+                    {
+                        case ItemType.SCP500:
+                            ev.Player.ShowHint("The Chosen One doesn't need this", 1f);
+                            ev.IsAllowed = false;
+                            break;
+                        
+                        case ItemType.MicroHID:
+                            var microHidsCount = ev.Player.CountItem(ItemType.MicroHID);
+
+                            if (microHidsCount >= 2)
+                            {
+                                return;
+                            }
+
+                            ev.Player.Inventory.ServerAddItem(ItemType.MicroHID, ItemAddReason.PickedUp);
+                            
+                            ev.IsAllowed = false;
+
+                            break;
+                    }
+                    break;
+            }
+        }
+
+        private static void SpecialRoundsOnInteracted(InteractedEventArgs ev)
+        {
+            if (Plugin.Instance.SpecialRoundsManager.IsPaused)
+            {
+                return;
+            }
+
+            if (Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Type == SpecialRoundType.DrugTesting ||
+                Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Type == SpecialRoundType.Phantoms)
+            {
+                _invisibilityRestoration(ev.Player);
+            }
+        }
+
+        private static void SpecialRoundsOnShooting(ShootingEventArgs ev)
+        {
+            if (Plugin.Instance.SpecialRoundsManager.IsPaused)
+            {
+                return;
+            }
+
+            if (Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Type == SpecialRoundType.DrugTesting ||
+                Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Type == SpecialRoundType.Phantoms)
+            {
+                _invisibilityRestoration(ev.Player);
+            }
         }
 
         private static void SpecialRoundsOnEndingRound(EndingRoundEventArgs ev)
@@ -264,10 +373,12 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds
             }
             
             Plugin.Instance.SpecialRoundsManager.FirstPlayerConnected = true;
+            
+            Log.Debug("First connection detected.");
 
             var specialRound = Plugin.Instance.SpecialRoundsManager.GetRandomSpecialRound();
             
-            if (!Plugin.Instance.Config.VotingIsAllowed)
+            if (Plugin.Instance.SpecialRoundsManager.VotingManager == null)
             {
                 Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound = specialRound;
                 return;
@@ -275,56 +386,32 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds
 
             Timing.CallDelayed(3f, () =>
             {
-                Round.IsLobbyLocked = true;
-                
-                Map.ClearBroadcasts();
-
-                Timing.RunCoroutine(Voting(specialRound));
+                Plugin.Instance.SpecialRoundsManager.VotingManager.StartVoting(specialRound);
             });
         }
 
-        private static IEnumerator<float> Voting(SpecialRoundType specialRound)
+        private static void _invisibilityRestoration(Player player)
         {
-            while (Round.IsLobbyLocked)
+            if (!SpecialRoundsManager.RunDefaultPlayerChecks(player))
             {
-                if (Plugin.Instance.SpecialRoundsManager.VotingTimeCounter <= 0)
-                {
-                    var lastString = "Vote failed! Special round disabled for this round.";
-                    
-                    if (Plugin.Instance.SpecialRoundsManager.SpecialRoundWonVote())
-                    {
-                        Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound = specialRound;
-                        lastString = "Vote passed! Special round enabled for this round.";
-                    }
-                    
-                    Map.ClearBroadcasts();
-                    
-                    var absentVoters = Plugin.Instance.SpecialRoundsManager.GetAbsentVotersCount();
-                    
-                    Map.Broadcast(5, "The voting has ended!\n" + SpecialRoundsManager.GetSpecialRoundTypeName(specialRound) + "\n" +
-                                     $"Yes: {Plugin.Instance.SpecialRoundsManager.GetVoteCount(VoteOptions.Yes)}, No: {Plugin.Instance.SpecialRoundsManager.GetVoteCount(VoteOptions.No) + absentVoters}\n" +
-                                     lastString);
-                    
-                    Round.IsLobbyLocked = false;
-                    
-                    yield return Timing.WaitForOneFrame;
-                }
-                
-                Map.Broadcast(1, "Voting for special round:\n" +
-                                 SpecialRoundsManager.GetSpecialRoundTypeName(specialRound) + "\n" +
-                                 $"Yes: {Plugin.Instance.SpecialRoundsManager.GetVoteCount(VoteOptions.Yes)}, No: {Plugin.Instance.SpecialRoundsManager.GetVoteCount(VoteOptions.No)}\n" +
-                                 $"Time left: {Plugin.Instance.SpecialRoundsManager.VotingTimeCounter} seconds.");
-
-                Plugin.Instance.SpecialRoundsManager.VotingTimeCounter -= 1;
-                
-                yield return Timing.WaitForSeconds(1f);
+                return;
             }
-        }
 
-        private static bool DefaultPlayerChecks(Player player)
-        {
-            var response = Plugin.Instance.Config.Debug ? !player.IsTutorial : !(player.IsNPC || player.IsTutorial);
-            return response;
+            if (!Plugin.Instance.SpecialRoundsManager.InvisiblePlayers.ContainsKey(player.Id) || Plugin.Instance.SpecialRoundsManager.InvisiblePlayers[player.Id] != null)
+            {
+                return;
+            }
+            
+            player.DisableEffect<Invisible>();
+                    
+            Plugin.Instance.SpecialRoundsManager.InvisiblePlayers[player.Id] = Timing.CallDelayed(
+                Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<byte>(SpecialRoundKeys
+                    .Phantoms.InvisibilityRestorationTime),
+                () =>
+                {
+                    Plugin.Instance.SpecialRoundsManager.InvisiblePlayers[player.Id] = null;
+                    player.EnableEffect<Invisible>();
+                });
         }
     }
 }
