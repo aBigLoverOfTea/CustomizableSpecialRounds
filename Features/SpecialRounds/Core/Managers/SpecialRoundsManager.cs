@@ -12,7 +12,7 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Core.Managers
 {
     public class SpecialRoundsManager
     {
-        public SpecialRound CurrentSpecialRound;
+        public SpecialRound CurrentSpecialRound = SpecialRound.CreateSpecialRound(SpecialRoundType.None);
 
         public SpecialRoundType PreviousSpecialRoundType { get; private set; } = SpecialRoundType.None;
 
@@ -22,9 +22,6 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Core.Managers
 
         [CanBeNull]
         public readonly VotingManager VotingManager = Plugin.Instance.Config.IsVotingEnabled ? new VotingManager() : null;
-        
-        // Key is ID of a player who should remain invisible, and value is a CoroutineHandle of a coroutine that re-applies invisibility
-        public readonly Dictionary<int, CoroutineHandle?> InvisiblePlayers = new Dictionary<int, CoroutineHandle?>();
         
         private static readonly Dictionary<EffectType, byte> AllowedEffects = new Dictionary<EffectType, byte>()
         {
@@ -46,7 +43,6 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Core.Managers
             { EffectType.Fade,              200 },
             { EffectType.Ghostly,           1 },
             { EffectType.Invigorated,       1 },
-            { EffectType.Invisible,         1 },
             { EffectType.Lightweight,       100 },
             { EffectType.MovementBoost,     Plugin.Instance.Config.ForestGumpSpeedEffectIntensity },
             { EffectType.RainbowTaste,      2 },
@@ -72,7 +68,7 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Core.Managers
             SpecialRoundType.Chill,
             SpecialRoundType.ZergRush,
             SpecialRoundType.DrugTesting,
-            SpecialRoundType.OneManArmy
+            SpecialRoundType.OneManArmy,
         };
 
         public static readonly Dictionary<ItemType, int> ChosenOneStartingItems = new Dictionary<ItemType, int>()
@@ -94,8 +90,6 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Core.Managers
         public void Reset()
         {
             VotingManager?.Reset();
-            
-            InvisiblePlayers.Clear();
 
             PreviousSpecialRoundType = CurrentSpecialRound.Type;
         
@@ -143,11 +137,6 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Core.Managers
         public void GiveRandomEffectToPlayer(int playerId)
         {
             var effect = _getRandomEffectType();
-
-            if (effect.Key == EffectType.Invisible)
-            {
-                InvisiblePlayers.Add(playerId, null);
-            }
             
             var player = Player.Get(playerId);
                     

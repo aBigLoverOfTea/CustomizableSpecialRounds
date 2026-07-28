@@ -45,11 +45,5 @@
             public const string ChosenOneHealth = "oneManArmy.chosenOneHealth";
             public const string ScpHealth = "oneManArmy.scpHealth";
         }
-
-        public static class Phantoms
-        {
-            public const string InvisibilityRestorationTime = "phantoms.invisibilityRestorationTime";
-            public const string ScpHealthBonus = "phantoms.scpHealthBonus";
-        }
     }
 }

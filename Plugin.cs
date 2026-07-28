@@ -38,5 +38,12 @@ namespace CustomizableSpecialRounds
             
             base.OnDisabled();
         }
+
+        public override void OnReloaded()
+        {
+            OnDisabled();
+            OnEnabled();
+            base.OnReloaded();
+        }
     }
 }

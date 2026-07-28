@@ -24,7 +24,8 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Core
             switch (specialRound.Type) // it's robust, but gets the job done and additional abstraction isn't worth it for the size of this project
             {
                 case SpecialRoundType.None:
-                    Log.Warn("During creation of a Special Round round type None has been passed.");
+                    Log.Warn("During creation of a Special Round, round type None has been passed.");
+                    specialRound.Name = "None";
                     break;
                 
                 case SpecialRoundType.Payday:
@@ -73,12 +74,6 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Core
                     specialRound.Parameters.Set(SpecialRoundKeys.OneManArmy.ChosenOneHealth, Plugin.Instance.Config.OneManArmyChosenOneHealth);
                     specialRound.Parameters.Set(SpecialRoundKeys.OneManArmy.ScpRoleId, Plugin.Instance.Config.OneManArmyScpRoleId);
                     specialRound.Parameters.Set(SpecialRoundKeys.OneManArmy.ScpHealth, Plugin.Instance.Config.OneManArmyScpHealth);
-                    break;
-                
-                case SpecialRoundType.Phantoms:
-                    specialRound.Name = Plugin.Instance.Config.PhantomsName;
-                    specialRound.Parameters.Set(SpecialRoundKeys.Phantoms.InvisibilityRestorationTime, Plugin.Instance.Config.PhantomsInvisibilityRestorationTime);
-                    specialRound.Parameters.Set(SpecialRoundKeys.Phantoms.ScpHealthBonus, Plugin.Instance.Config.PhantomsScpHealthBonus);
                     break;
                 
                 default:

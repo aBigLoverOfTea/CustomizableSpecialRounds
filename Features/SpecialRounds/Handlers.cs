@@ -28,8 +28,6 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds
             Exiled.Events.Handlers.Server.RestartingRound += SpecialRoundsOnRestartingRound;
             Exiled.Events.Handlers.Server.RespawningTeam += SpecialRoundsOnRespawning;
             Exiled.Events.Handlers.Player.PickingUpItem += SpecialRoundOnPickingUpItem;
-            Exiled.Events.Handlers.Player.Interacted += SpecialRoundsOnInteracted;
-            Exiled.Events.Handlers.Player.Shooting += SpecialRoundsOnShooting;
         }
 
         public static void UnsubscribeEvents()
@@ -41,8 +39,6 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds
             Exiled.Events.Handlers.Server.RestartingRound -= SpecialRoundsOnRestartingRound;
             Exiled.Events.Handlers.Server.RespawningTeam -= SpecialRoundsOnRespawning;
             Exiled.Events.Handlers.Player.PickingUpItem -= SpecialRoundOnPickingUpItem;
-            Exiled.Events.Handlers.Player.Interacted -= SpecialRoundsOnInteracted;
-            Exiled.Events.Handlers.Player.Shooting -= SpecialRoundsOnShooting;
         }
         
         private static void SpecialRoundsOnAllPlayerSpawned()
@@ -191,8 +187,8 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds
                 
                 case SpecialRoundType.VitalityShift:
                     var multiplier = ev.Player.IsScp
-                        ? Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<int>(SpecialRoundKeys.VitalityShift.ScpHealthMultiplier)
-                        : Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<int>(SpecialRoundKeys.VitalityShift.HumanRoleHealthMultiplier);
+                        ? Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<float>(SpecialRoundKeys.VitalityShift.ScpHealthMultiplier)
+                        : Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<float>(SpecialRoundKeys.VitalityShift.HumanRoleHealthMultiplier);
                     
                     ev.Player.MaxHealth *= multiplier;
                     ev.Player.Health *= multiplier;
@@ -227,32 +223,6 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds
                     }
                     
                     Plugin.Instance.SpecialRoundsManager.GiveRandomEffectToPlayer(ev.Player.Id);
-                    
-                    break;
-                
-                case SpecialRoundType.Phantoms:
-                    if (!SpecialRoundsManager.RunDefaultPlayerChecks(ev.Player))
-                    {
-                        break;
-                    }
-
-                    if (ev.Player.IsScp)
-                    {
-                        var healthBonus =
-                            Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<int>(
-                                SpecialRoundKeys.Phantoms.ScpHealthBonus);
-                        
-                        ev.Player.MaxHealth += healthBonus;
-                        ev.Player.Health += healthBonus;
-
-                        break;
-                    }
-                    
-                    Plugin.Instance.SpecialRoundsManager.InvisiblePlayers.Add(ev.Player.Id, null);
-                    
-                    ev.Player.EnableEffect<Invisible>();
-                    
-                    ev.Player.Broadcast(5, Plugin.Instance.Config.PhantomsBroadcast, shouldClearPrevious:true);
                     
                     break;
                 
@@ -314,39 +284,13 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds
 
                             ev.Player.Inventory.ServerAddItem(ItemType.MicroHID, ItemAddReason.PickedUp);
                             
+                            ev.Pickup.Destroy();
+                            
                             ev.IsAllowed = false;
 
                             break;
                     }
                     break;
-            }
-        }
-
-        private static void SpecialRoundsOnInteracted(InteractedEventArgs ev)
-        {
-            if (Plugin.Instance.SpecialRoundsManager.IsPaused)
-            {
-                return;
-            }
-
-            if (Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Type == SpecialRoundType.DrugTesting ||
-                Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Type == SpecialRoundType.Phantoms)
-            {
-                _invisibilityRestoration(ev.Player);
-            }
-        }
-
-        private static void SpecialRoundsOnShooting(ShootingEventArgs ev)
-        {
-            if (Plugin.Instance.SpecialRoundsManager.IsPaused)
-            {
-                return;
-            }
-
-            if (Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Type == SpecialRoundType.DrugTesting ||
-                Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Type == SpecialRoundType.Phantoms)
-            {
-                _invisibilityRestoration(ev.Player);
             }
         }
 
@@ -388,30 +332,6 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds
             {
                 Plugin.Instance.SpecialRoundsManager.VotingManager.StartVoting(specialRound);
             });
-        }
-
-        private static void _invisibilityRestoration(Player player)
-        {
-            if (!SpecialRoundsManager.RunDefaultPlayerChecks(player))
-            {
-                return;
-            }
-
-            if (!Plugin.Instance.SpecialRoundsManager.InvisiblePlayers.ContainsKey(player.Id) || Plugin.Instance.SpecialRoundsManager.InvisiblePlayers[player.Id] != null)
-            {
-                return;
-            }
-            
-            player.DisableEffect<Invisible>();
-                    
-            Plugin.Instance.SpecialRoundsManager.InvisiblePlayers[player.Id] = Timing.CallDelayed(
-                Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<byte>(SpecialRoundKeys
-                    .Phantoms.InvisibilityRestorationTime),
-                () =>
-                {
-                    Plugin.Instance.SpecialRoundsManager.InvisiblePlayers[player.Id] = null;
-                    player.EnableEffect<Invisible>();
-                });
         }
     }
 }

@@ -12,7 +12,7 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
 
         public string[] Aliases { get; } = { "setparam", "sp", "setp", "set", "setpar" };
 
-        public string Description { get; } = "Sets the specified parameter of a current special round.";
+        public string Description { get; } = "Sets the specified parameter of the current special round.";
         
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {

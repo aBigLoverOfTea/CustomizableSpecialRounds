@@ -12,6 +12,5 @@
         ZergRush,
         DrugTesting,
         OneManArmy,
-        Phantoms,
     }
 }

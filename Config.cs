@@ -27,7 +27,7 @@ namespace CustomizableSpecialRounds
         public float VitalityShiftHumanRoleHealthMultiplier { get; set; } = 2.0f;
         
         [Description("HP multiplier of the SCP-subjects for the \"Vitality Shift\" special round.")]
-        public float VitalityShiftScpHealthMultiplier { get; set; } = 2.0f;
+        public float VitalityShiftScpHealthMultiplier { get; set; } = 2f;
         
         [Description("How many pink candies should the \"Sweet Boom-Tooth\" special round give.")]
         public int SweetToothPinkCandiesAtStart { get; set; } = 1;
@@ -56,41 +56,32 @@ namespace CustomizableSpecialRounds
         [Description("Starting health of the SCPs during the \"One Man Army\" special round.")]
         public int OneManArmyScpHealth { get; set; } = 1800;
         
-        [Description("Time in seconds after which the invisibility effect will be reapplied during the \"Phantoms\" and \"Drug Testing\" special round.")]
-        public byte PhantomsInvisibilityRestorationTime { get; set; } = 2;
-        
-        [Description("Additional health that will be added to every SCP during the \"Phantoms\" special round.")]
-        public int PhantomsScpHealthBonus { get; set; } = 400;
-        
         [Description("Custom display name for the \"Payday\" special round.")]
         public string PaydayName { get; set; } = "Payday";
 
-        [Description("Custom display name for the \"Payday\" special round.")]
+        [Description("Custom display name for the \"Vitality Shift\" special round.")]
         public string VitalityShiftName { get; set; } = "Vitality Shift";
 
-        [Description("Custom display name for the \"Payday\" special round.")]
+        [Description("Custom display name for the \"Sweet Tooth\" special round.")]
         public string SweetToothName { get; set; } = "Sweet Tooth";
 
-        [Description("Custom display name for the \"Payday\" special round.")]
+        [Description("Custom display name for the \"Forest Gump\" special round.")]
         public string ForestGumpName { get; set; } = "Forest Gump";
 
-        [Description("Custom display name for the \"Payday\" special round.")]
+        [Description("Custom display name for the \"Super Balling\" special round.")]
         public string SuperBallingName { get; set; } = "Super Balling";
 
-        [Description("Custom display name for the \"Payday\" special round.")]
+        [Description("Custom display name for the \"Chill\" special round.")]
         public string ChillName { get; set; } = "Chill";
 
-        [Description("Custom display name for the \"Payday\" special round.")]
+        [Description("Custom display name for the \"Zerg Rush\" special round.")]
         public string ZergRushName { get; set; } = "Zerg Rush";
 
-        [Description("Custom display name for the \"Payday\" special round.")]
+        [Description("Custom display name for the \"Drug Testing\" special round.")]
         public string DrugTestingName { get; set; } = "Drug Testing";
 
-        [Description("Custom display name for the \"Payday\" special round.")]
+        [Description("Custom display name for the \"One Man Army\" special round.")]
         public string OneManArmyName { get; set; } = "One Man Army";
-
-        [Description("Custom display name for the \"Payday\" special round.")]
-        public string PhantomsName { get; set; } = "Phantoms";
         
         [Description("Broadcast that is sent every sencond to all players during the voting.")]
         public string VotingProgressBroadcast { get; set; } = "Voting for special round:\n{round_in_voting}\nYes: {votes_yes}, No: {votes_no}\nTime left: {time_left} seconds.";
@@ -135,9 +126,6 @@ namespace CustomizableSpecialRounds
         
         [Description("Broadcast sent to every player when the \"Zerg Rush\" special round has started.")]
         public string ZergRushBroadcast { get; set; } = "ZERG RUSH!!!";
-        
-        [Description("Broadcast sent to every player when the \"Phantoms\" special round has started.")]
-        public string PhantomsBroadcast { get; set; } = "You feel yourself fading away...";
         
         [Description("Broadcast sent to every player when the \"Drug Testing\" special round has started.")]
         public string DrugTestingBroadcast { get; set; } = "You got: {effect}!";
