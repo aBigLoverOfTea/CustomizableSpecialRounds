@@ -11,7 +11,7 @@ namespace CustomizableSpecialRounds
         
         public override string Author { get; } = "zaza";
 
-        public override Version Version { get; } =  new Version(1, 0, 0);
+        public override Version Version { get; } =  new Version(1, 0, 1);
         
         public static Plugin Instance { get; private set; }
         
