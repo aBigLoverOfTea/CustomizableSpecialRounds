@@ -273,22 +273,6 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds
                             ev.Player.ShowHint("The Chosen One doesn't need this", 1f);
                             ev.IsAllowed = false;
                             break;
-                        
-                        case ItemType.MicroHID:
-                            var microHidsCount = ev.Player.CountItem(ItemType.MicroHID);
-
-                            if (microHidsCount >= 2)
-                            {
-                                return;
-                            }
-
-                            ev.Player.Inventory.ServerAddItem(ItemType.MicroHID, ItemAddReason.PickedUp);
-                            
-                            ev.Pickup.Destroy();
-                            
-                            ev.IsAllowed = false;
-
-                            break;
                     }
                     break;
             }
