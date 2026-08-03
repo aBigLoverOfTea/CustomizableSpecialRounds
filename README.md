@@ -179,10 +179,12 @@ Almost all broadcast strings are fully customizable. Several support **placehold
 | `vitality_shift_broadcast` | `You feel {health_multiplier} times healthier!!` | Player spawns. |
 | `forest_gump_broadcast` | `Run! Run {speed_intensity} times faster than ever before!` | Player spawns. |
 | `zerg_rush_broadcast` | `ZERG RUSH!!!` | Player spawns. |
-| `phantoms_broadcast` | `You feel yourself fading away...` | Player spawns. |
 | `drug_testing_broadcast` | `You got: {effect}!` | Player receives their random effect. |
 | `one_man_army_chosen_one_broadcast` | `<color=red><b>YOU'RE THE STAR OF THE SHOW NOW, BABY!</b></color>` | Sent to the Chosen One at round start. |
 | `one_man_army_scp_broadcast` | `<color=red><b>BRING {chosen_name} DOWN!</b></color>` | Sent to all other players at round start. |
+| `lights_out_flashlight_given_broadcast` | `<i>Darkness constricts you...</i>` | On spawn if flashlight was given OR if the player already has a flashlight. |
+| `one_man_army_scp_broadcast` | `<i>Darkness constricts you...</i>` | On spawn if flashlight wasn't given. |
+| `late_for_shift_on_spawned_broadcast` | `You probably shouldn''t have overslept...` | Player spawns. |
 
 ---
 
