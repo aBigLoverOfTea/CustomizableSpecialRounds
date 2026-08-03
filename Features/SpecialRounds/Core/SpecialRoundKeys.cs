@@ -41,9 +41,20 @@
         public static class OneManArmy
         {
             public const string ScpRoleId = "oneManArmy.scpRoleId";
+            public const string ScpHealth = "oneManArmy.scpHealth";
             public const string ChosenOneRoleId = "oneManArmy.chosenOneRoleId";
             public const string ChosenOneHealth = "oneManArmy.chosenOneHealth";
-            public const string ScpHealth = "oneManArmy.scpHealth";
+            public const string ChosenOneSpecialWeaponsLimit = "oneManArmy.chosenOneSpecialWeaponsLimit";
+        }
+
+        public static class LightsOut
+        {
+            public const string ScpHealthMultiplier = "lightsOut.scpHealthMultiplier";
+        }
+
+        public static class LateForShift
+        {
+            public const string ShouldGiveAmmo = "lateForShift.shouldGiveAmmo";
         }
     }
 }

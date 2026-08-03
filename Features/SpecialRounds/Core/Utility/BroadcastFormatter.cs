@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using CustomizableSpecialRounds.Features.SpecialRounds.Core.Enums;
 using PlayerRoles;
 
-namespace CustomizableSpecialRounds.Features.SpecialRounds.Core
+namespace CustomizableSpecialRounds.Features.SpecialRounds.Core.Utility
 {
     public static class BroadcastFormatter
     {

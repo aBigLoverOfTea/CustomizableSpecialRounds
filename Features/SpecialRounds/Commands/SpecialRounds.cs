@@ -32,7 +32,7 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
         {
             if (!Player.TryGet(sender, out var playerSender))
             {
-                response = "Error: no sender found.";
+                response = "Error: couldn't find the command sender!";
                 return false;
             }
 

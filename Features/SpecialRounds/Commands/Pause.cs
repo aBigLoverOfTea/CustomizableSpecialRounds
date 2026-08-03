@@ -1,7 +1,6 @@
 ﻿using System;
 using CommandSystem;
 using CustomizableSpecialRounds.Features.SpecialRounds.Commands.Interfaces;
-using CustomizableSpecialRounds.Features.SpecialRounds.Core.Enums;
 using Exiled.API.Features;
 
 namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
@@ -35,23 +34,17 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
                 return false;
             }
 
-            if (Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Type == SpecialRoundType.None)
-            {
-                response = "Error: Special Round not found.";
-                return false;
-            }
-
             if (Plugin.Instance.SpecialRoundsManager.IsPaused)
             {
                 Plugin.Instance.SpecialRoundsManager.IsPaused = false;
                 
-                response = "Special Round resumed!";
+                response = $"\"{Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Name}\" Special Round resumed!";
                 return true;
             }
 
             Plugin.Instance.SpecialRoundsManager.IsPaused = true;
             
-            response = "Special Round paused!";
+            response = $"\"{Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Name}\" Special Round paused!";
             return true;
         }
     }

@@ -12,13 +12,13 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
 
         public string[] Aliases { get; } = { "setparam", "sp", "setp", "set", "setpar" };
 
-        public string Description { get; } = "Sets the specified parameter of the current special round.";
+        public string Description { get; } = "Sets the specified parameter of the current Special Round.";
         
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             if (!Player.TryGet(sender, out var playerSender))
             {
-                response = "Error: could not find the command sender.";
+                response = "Error: couldn't find the command sender!";
                 return false;
             }
 
@@ -41,7 +41,7 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
                 return false;
             }
             
-            response = "Parameter set successfully!";
+            response = $"Parameter {arguments[0]} set to {Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Get<string>(arguments[0])} successfully!";
             return true;
         }
     }

@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Linq;
 using CommandSystem;
 using CustomizableSpecialRounds.Features.SpecialRounds.Commands.Interfaces;
 using CustomizableSpecialRounds.Features.SpecialRounds.Core.Enums;
-using CustomizableSpecialRounds.Features.SpecialRounds.Core.Managers;
 using Exiled.API.Features;
 
 namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
@@ -14,13 +14,13 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
         
         public string[] Aliases { get; } = { "i", "information" };
         
-        public string Description { get; } = "Get current plugin info (current special round, configurable modificators, etc.)";
+        public string Description { get; } = "Get current plugin info (current Special Round, configurable modificators, etc.)";
         
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             if (!Player.TryGet(sender, out var playerSender))
             {
-                response = "Error: no sender found.";
+                response = "Error: couldn't find the command sender!";
                 return false;
             }
 
@@ -32,9 +32,14 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
 
             var allowedSpecialRounds = "";
 
-            foreach (var specialRoundType in SpecialRoundsManager.AllowedSpecialRoundTypes)
+            foreach (var specialRoundType in Plugin.Instance.SpecialRoundsManager.SpecialRoundTypes)
             {
-                allowedSpecialRounds += specialRoundType.ToString() + ", ";
+                allowedSpecialRounds += specialRoundType
+                                            .ToString()
+                                            .Substring(specialRoundType
+                                                .ToString()
+                                                .LastIndexOf(".", StringComparison.Ordinal)+1) 
+                                        + ", ";
             }
 
             response = $"\n---Customizable Special Rounds by {Plugin.Instance.Author}---\n" +
@@ -43,9 +48,9 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
                        $"* Is debug mode on: {Plugin.Instance.Config.Debug}\n" +
                        $"* Are force spawned players affected by plugin: {Plugin.Instance.Config.ShouldAffectForceSpawnedPlayers}\n" +
                        $"* Is voting enabled: {Plugin.Instance.Config.IsVotingEnabled}\n" +
-                       $"* Current special round: {Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Name}\n" +
-                       $"* Previous special round: {Plugin.Instance.SpecialRoundsManager.PreviousSpecialRoundType}\n" +
-                       $"* Allowed special rounds: {allowedSpecialRounds}\n";
+                       $"* Current Special Round: {Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Name}\n" +
+                       $"* Previous Special Round: {Plugin.Instance.SpecialRoundsManager.PreviousSpecialRoundType?.Name}\n" +
+                       $"* Registered Special Rounds: {allowedSpecialRounds}\n";
 
             if (Plugin.Instance.SpecialRoundsManager.VotingManager != null)
             {
@@ -59,12 +64,7 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
                             $"** Abstained voters: {Plugin.Instance.SpecialRoundsManager.VotingManager.GetAbsentVotersCount()}\n";
             }
 
-            var parameters = "";
-
-            foreach (var parameter in Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters)
-            {
-                parameters += "* " + parameter.Key + ": " + parameter.Value + "\n";
-            }
+            var parameters = Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.Parameters.Aggregate("", (current, parameter) => current + ("* " + parameter.Key + ": " + parameter.Value + "\n"));
 
             response += "\n--Current Special Round Parameters--\n" + parameters;
             

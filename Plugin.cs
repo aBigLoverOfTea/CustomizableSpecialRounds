@@ -1,7 +1,10 @@
 using System;
-using CustomizableSpecialRounds.Features.SpecialRounds;
+using System.Linq;
+using CustomizableSpecialRounds.Features.SpecialRounds.Core;
 using CustomizableSpecialRounds.Features.SpecialRounds.Core.Managers;
+using Exiled.API.Extensions;
 using Exiled.API.Features;
+using Org.BouncyCastle.Utilities;
 
 namespace CustomizableSpecialRounds
 {
@@ -11,7 +14,7 @@ namespace CustomizableSpecialRounds
         
         public override string Author { get; } = "zaza";
 
-        public override Version Version { get; } =  new Version(1, 0, 1);
+        public override Version Version { get; } =  new Version(1, 1, 0);
         
         public static Plugin Instance { get; private set; }
         
@@ -22,6 +25,10 @@ namespace CustomizableSpecialRounds
             Instance = this;
 
             SpecialRoundsManager = new SpecialRoundsManager();
+            
+            Log.Debug("SpecialRoundsManager has been initialized.\n" +
+                      $"Special Rounds found in plugin's assembly: {SpecialRoundsManager.SpecialRoundTypes.Count}\n" +
+                      $"{Instance.SpecialRoundsManager.SpecialRoundTypes.Aggregate("", (current, specialRoundType) => current + (specialRoundType.ToString().Substring(specialRoundType.ToString().LastIndexOf(".", StringComparison.Ordinal) + 1) + "; "))}");
 
             Handlers.SubscribeEvents();
             
@@ -37,13 +44,6 @@ namespace CustomizableSpecialRounds
             Instance = null;
             
             base.OnDisabled();
-        }
-
-        public override void OnReloaded()
-        {
-            OnDisabled();
-            OnEnabled();
-            base.OnReloaded();
         }
     }
 }

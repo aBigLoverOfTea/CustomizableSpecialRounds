@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using CustomizableSpecialRounds.Features.SpecialRounds.Core.Enums;
+using CustomizableSpecialRounds.Features.SpecialRounds.Core.SpecialRounds;
+using CustomizableSpecialRounds.Features.SpecialRounds.Core.Utility;
 using Exiled.API.Features;
 using MEC;
 using Server = LabApi.Features.Wrappers.Server;
@@ -22,6 +24,8 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Core.Managers
         public void Vote(int playerId, VoteOption voteOption)
         {
             _votedPlayers[playerId] = voteOption;
+            
+            Log.Debug($"Player with ID \"{playerId}\" voted \"{voteOption}\".");
         }
 
         public int GetVoteCount(VoteOption vote = VoteOption.Any)
@@ -90,6 +94,8 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Core.Managers
             ForceKillVotingCoroutine();
                 
             Server.SendBroadcast("Special Round has been reset.\nRestarting the voting...", 3, Broadcast.BroadcastFlags.Normal, true);
+            
+            Log.Debug("Special Round has been reset during the voting.");
 
             Timing.CallDelayed(3.1f, () =>
             {
@@ -108,6 +114,9 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Core.Managers
                     if (SpecialRoundWonVoting())
                     {
                         Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound = SpecialRoundInVoting;
+                        
+                        Plugin.Instance.SpecialRoundsManager.CurrentSpecialRound.SubscribeEvents();
+                        
                         Server.SendBroadcast(BroadcastFormatter.FormatVotingBroadcast(Plugin.Instance.Config.RoundWonVotingBroadcast), 5, shouldClearPrevious:true);
                     }
                     else
@@ -128,7 +137,7 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Core.Managers
                 
                 Server.SendBroadcast(BroadcastFormatter.FormatVotingBroadcast(Plugin.Instance.Config.VotingProgressBroadcast), 1, shouldClearPrevious:true);
 
-                Log.Debug($"Voting tick passed.\nSpecial Round: {SpecialRoundInVoting?.Type}\nTotal amount of voters: {GetVoteCount()}\nTime left: {VotingTimeCounter}");
+                Log.Debug($"Voting tick passed.\nSpecial Round: {SpecialRoundInVoting?.Name}\nTotal amount of voters: {GetVoteCount()}\nTime left: {VotingTimeCounter}");
                 
                 VotingTimeCounter -= 1;
                 

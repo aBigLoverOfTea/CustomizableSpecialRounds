@@ -11,7 +11,7 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
 
         public string[] Aliases { get; } = { "y", "1", "+" };
 
-        public string Description { get; } = "Vote \"Yes\" for the current selected special round (works only during the voting!)";
+        public string Description { get; } = "Vote \"Yes\" for the current selected Special Round (works only during the voting!)";
         
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
