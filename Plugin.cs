@@ -2,9 +2,7 @@ using System;
 using System.Linq;
 using CustomizableSpecialRounds.Features.SpecialRounds.Core;
 using CustomizableSpecialRounds.Features.SpecialRounds.Core.Managers;
-using Exiled.API.Extensions;
 using Exiled.API.Features;
-using Org.BouncyCastle.Utilities;
 
 namespace CustomizableSpecialRounds
 {
@@ -14,7 +12,7 @@ namespace CustomizableSpecialRounds
         
         public override string Author { get; } = "zaza";
 
-        public override Version Version { get; } =  new Version(1, 1, 0);
+        public override Version Version { get; } =  new Version(1, 1, 1);
         
         public static Plugin Instance { get; private set; }
         

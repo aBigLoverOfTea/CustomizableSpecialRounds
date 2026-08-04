@@ -16,7 +16,9 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Core.SpecialRounds
         protected virtual void OnRespawningTeam(RespawningTeamEventArgs ev) {}
         
         protected virtual void OnPickingUpItem(PickingUpItemEventArgs ev) {}
+        
         public virtual void SubscribeEvents() {}
+        
         public virtual void UnsubscribeEvents() {}
     }
 }

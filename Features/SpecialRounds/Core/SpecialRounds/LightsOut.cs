@@ -43,11 +43,13 @@ namespace CustomizableSpecialRounds.Features.SpecialRounds.Core.SpecialRounds
         public override void SubscribeEvents()
         {
             Exiled.Events.Handlers.Server.AllPlayersSpawned += OnAllPlayersSpawned;
+            Exiled.Events.Handlers.Player.Spawned += OnSpawned;
         }
 
         public override void UnsubscribeEvents()
         {
             Exiled.Events.Handlers.Server.AllPlayersSpawned -= OnAllPlayersSpawned;
+            Exiled.Events.Handlers.Player.Spawned -= OnSpawned;
         }
     }
 }

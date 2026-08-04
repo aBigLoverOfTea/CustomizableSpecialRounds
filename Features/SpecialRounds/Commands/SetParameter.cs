@@ -5,7 +5,6 @@ using Exiled.API.Features;
 
 namespace CustomizableSpecialRounds.Features.SpecialRounds.Commands
 {
-    [CommandHandler(typeof(RemoteAdminCommandHandler))]
     public class SetParameter : ICommand, IRemoteAdminCommand
     {
         public string Command { get; } = "setparameter";
