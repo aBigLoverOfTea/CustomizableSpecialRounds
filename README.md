@@ -2,7 +2,7 @@
 
 A plugin for **SCP: Secret Laboratory** servers running the [EXILED](https://github.com/ExMod-Team/EXILED) framework. Each round, a special game mode is randomly selected and put to a player vote — adding variety and chaos to your server without changing the base game.
 
-> **Latest version:** 1.0.1  
+> **Latest version:** 1.1.0  
 > **Author:** zaza  
 > **Framework:** EXILED
 
@@ -32,8 +32,9 @@ Voting can be disabled in the config, in which case the Special Round is applied
 | **Chill** | All non-SCP players receive a configurable number of SCP-244s at round start. |
 | **Zerg Rush** | All non-SCP players are forced into a single configurable role at round start. |
 | **Drug Testing** | Every player spawns with a random status effect — could be a buff, a debuff, or something in between. If the player has spawn protection, the effect is applied after it expires. |
-| **One Man Army** | One random player becomes the **Chosen One**: they spawn in a configurable role with massive HP and a full arsenal (MicroHID, FRMG-0, Logicer, E-11 SR, and more). Every other player spawns as a configurable SCP role. No respawns. The Chosen One cannot pick up SCP-500. |
-| **Phantoms** | All non-SCP players are permanently invisible — but their invisibility is briefly removed when they shoot or interact with anything, then reapplied after a configurable delay. SCPs receive a configurable HP bonus to compensate. |
+| **One Man Army** | One random player becomes the **Chosen One**: they spawn in a configurable role with massive HP and a full arsenal (MicroHID, FRMG-0, Logicer, E-11 SR, and more). Every other player spawns as a configurable SCP role. No respawns. The Chosen One cannot pick up SCP-500, but is able to have 2 special weapons. |
+| **Lights Out** | All lights on the map are permanently disabled. All SCP-player's health is multiplied by a configurable multiplier. All non-SCP players recieve a flashlight. |
+| **Late For Shift** | Default inventory of all non-SCP players is randomized on spawn. MTF, CI and Guards recieve maximal carryable amount of every ammo type. |
 
 ---
 
@@ -92,8 +93,8 @@ These keys can be used with `specialrounds setparameter` to tweak a round's valu
 | One Man Army | `oneManArmy.chosenOneHealth` | Starting HP of the Chosen One. |
 | One Man Army | `oneManArmy.scpRoleId` | Role ID all other players spawn as. |
 | One Man Army | `oneManArmy.scpHealth` | Starting HP of all other players. |
-| Phantoms | `phantoms.invisibilityRestorationTime` | Seconds before invisibility is reapplied after interaction/shooting. |
-| Phantoms | `phantoms.scpHealthBonus` | Bonus HP added to SCPs. |
+| Lights Out | `lightsOut.scpHealthMultiplier` | HP multiplier for SCPs. |
+| Late For Shift | `lateForShift.shouldGiveAmmo` | Whether a non-SCP player that recieves a weapon should also get max ammo for that weapon. |
 
 > For role IDs, refer to the full list [here](https://steamcommunity.com/sharedfiles/filedetails/?id=2630379740).
 
@@ -129,8 +130,9 @@ The config file is generated at `EXILED/Configs/` on first run.
 | `one_man_army_chosen_one_role_id` | `15` | The role ID the Chosen One spawns as in **One Man Army**. |
 | `one_man_army_chosen_one_health` | `10000` | Starting HP of the Chosen One in **One Man Army**. |
 | `one_man_army_scp_health` | `1800` | Starting HP of each other player in **One Man Army**. |
-| `phantoms_invisibility_restoration_time` | `2` | Seconds before invisibility is reapplied after shooting or interacting in **Phantoms**. |
-| `phantoms_scp_health_bonus` | `400` | Bonus HP added to SCPs in **Phantoms**. |
+| `one_man_army_chosen_one_special_weapons_limit` | `2` | How many special weapons can the Chosen One carry in **One Man Army**. |
+| `lights_out_scp_health_multiplier` | `0.7` | HP multiplier for SCPs in **Lights Out**. |
+| `late_for_shift_should_give_ammo` | `false` | Whether a non-SCP player that recieves a weapon should also get max ammo for that weapon in **Late For Shift**. |
 
 ### Custom Round Names
 
@@ -147,7 +149,8 @@ Every Special Round has a configurable display name that appears in broadcasts a
 | `zerg_rush_name` | `Zerg Rush` |
 | `drug_testing_name` | `Drug Testing` |
 | `one_man_army_name` | `One Man Army` |
-| `phantoms_name` | `Phantoms` |
+| `lights_out_name` | `Lights Out` |
+| `late_for_shift_name` | `Late For Shift` |
 
 ### Broadcasts
 
@@ -176,10 +179,12 @@ Almost all broadcast strings are fully customizable. Several support **placehold
 | `vitality_shift_broadcast` | `You feel {health_multiplier} times healthier!!` | Player spawns. |
 | `forest_gump_broadcast` | `Run! Run {speed_intensity} times faster than ever before!` | Player spawns. |
 | `zerg_rush_broadcast` | `ZERG RUSH!!!` | Player spawns. |
-| `phantoms_broadcast` | `You feel yourself fading away...` | Player spawns. |
 | `drug_testing_broadcast` | `You got: {effect}!` | Player receives their random effect. |
 | `one_man_army_chosen_one_broadcast` | `<color=red><b>YOU'RE THE STAR OF THE SHOW NOW, BABY!</b></color>` | Sent to the Chosen One at round start. |
 | `one_man_army_scp_broadcast` | `<color=red><b>BRING {chosen_name} DOWN!</b></color>` | Sent to all other players at round start. |
+| `lights_out_flashlight_given_broadcast` | `<i>Darkness constricts you...</i>` | On spawn if flashlight was given OR if the player already has a flashlight. |
+| `one_man_army_scp_broadcast` | `<i>Darkness constricts you...</i>` | On spawn if flashlight wasn't given. |
+| `late_for_shift_on_spawned_broadcast` | `You probably shouldn''t have overslept...` | Player spawns. |
 
 ---
 
