@@ -2,7 +2,7 @@
 
 A plugin for **SCP: Secret Laboratory** servers running the [EXILED](https://github.com/ExMod-Team/EXILED) framework. Each round, a special game mode is randomly selected and put to a player vote — adding variety and chaos to your server without changing the base game.
 
-> **Latest version:** 1.1.0  
+> **Latest version:** 1.1.1  
 > **Author:** zaza  
 > **Framework:** EXILED
 
